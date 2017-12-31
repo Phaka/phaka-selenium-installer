@@ -57,6 +57,21 @@
 		<UIRef Id="WixUI_ErrorProgressText" />
 
 	</Product>
+
+	<!-- 
+	We'd like to makesure we kill all the web drivers when we install or 
+	uninstall. For some reason they sometimes hang around and become orphans. 
+	Can't really ask the user to kill 100s of those processes.
+	
+	We're giving the web drivers ample time to quit, rather than the normal 5 seconds.
+	-->
+	<Fragment>
+		<util:CloseApplication Id="CloseOperaWebDriver" Timeout="30" Target="operadriver.exe"/>
+		<util:CloseApplication Id="CloseInternetExplorerWebDriver" Timeout="30" Target="IEDriverServer.exe"/>
+		<util:CloseApplication Id="CloseChromeWebDriver" Timeout="30" Target="chromedriver.exe"/>
+		<util:CloseApplication Id="CloseGeckoWebDriver" Timeout="30" Target="geckodriver.exe"/>
+	</Fragment>
+
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
