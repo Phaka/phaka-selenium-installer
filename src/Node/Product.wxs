@@ -1,30 +1,197 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="Selenium Node" Language="1033" Version="1.0.0.0" Manufacturer="Phaka" UpgradeCode="776358eb-d547-4b25-b4f6-5e364ff8e109">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"  
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" 
+     xmlns:http="http://schemas.microsoft.com/wix/HttpExtension"
+     xmlns:firewall="http://schemas.microsoft.com/wix/FirewallExtension">
+
+	<Product Id="*" Name="Phaka Selenium Node" Language="1033" Version="1.0.0.0" Manufacturer="Phaka" UpgradeCode="776358eb-d547-4b25-b4f6-5e364ff8e109">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+		<Condition Message="You need to be an administrator to install this product.">AdminUser</Condition>
+		<Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
+		
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+		<Property Id="SERVICEACCOUNT" Value="Phaka Selenium Node" />
+		<Property Id="SERVICEPASSWORD" Value="Ph@k@-S3l3nium-N0de" Secure="yes" />
+		<Property Id="SELENIUM_PORT" Value="5555" />
+		<Property Id="SELENIUM_HUB_BASEURL" Value="http://localhost:4444/" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
-
-		<Feature Id="ProductFeature" Title="Node" Level="1">
-			<ComponentGroupRef Id="ProductComponents" />
+		<MediaTemplate EmbedCab="yes"  CompressionLevel="high" />
+		
+		<Feature Id="ProductFeature" Title="Selenium Node" Level="1" Display="expand" Description="Installs a Selenium node on the local machine.">
+			<ComponentRef Id="CL_selenium.exe" />
+			<ComponentRef Id="CL_selenium.jar" />
+			<Feature Id='DriversFeature' Level='1' Title='Web Drivers' Display='expand' Description='Install Web Drivers on the local computer'>
+				<Feature Id='ChromeDriverFeature' Title='Chrome Web Driver' Display='expand' Description='Installs the Chrome Web Driver used to automate Chrome' Level='1'>
+					<ComponentRef Id="CL_chromedriver.exe" />
+				</Feature>
+				<Feature Id='GeckoDriverFeature' Title='Gecko Web Driver' Display='expand' Description='Installs the Gecko Web Driver used to automate Firefox' Level='1'>
+					<ComponentRef Id="CL_geckodriver.exe" />
+				</Feature>
+				<Feature Id='IEDriverFeature' Title='Internet Explorer Web Driver' Display='expand' Description='Installs the Internet Explorer Web Driver' Level='1'>
+					<ComponentRef Id="CL_IEDriverServer.exe" />
+				</Feature>
+				<Feature Id='OperaDriverFeature' Title='Opera Web Driver' Display='expand' Description='Installs the Opera Web Driver' Level='1'>
+					<ComponentRef Id="CL_operadriver.exe" />
+				</Feature>
+			</Feature>
 		</Feature>
-	</Product>
 
+		<UIRef Id="WixUI_Mondo" />
+		<UIRef Id="WixUI_ErrorProgressText" />
+
+	</Product>
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
-				<Directory Id="INSTALLFOLDER" Name="Node" />
+				<Directory Id='MANUFACTURERFOLDER' Name='Selenium'>
+					<Directory Id="INSTALLFOLDER" Name="Node">
+						<Component Id='CL_selenium.exe' Guid='{8D393038-91BD-4751-8ABE-1286A29EA62F}'>
+
+							<!-- See https://github.com/Phaka/phaka-service-wrapper for more information about wrapper.exe -->
+							<File Id='FL_Selenium.exe'
+                    Name='selenium-node.exe'
+                    DiskId='1'
+                    Source='..\..\lib\x64\wrapper\wrapper.exe'
+                    KeyPath='yes' />
+
+							<!-- The  IniFile custom action will not create the file, so we need to do it. Be careful of encodings, since Windows refuses to read a INI file with a UTF-8 encoding with a BOM -->
+							<File Id='FL_selenium.cfg' Name='selenium-node.cfg' DiskId='1' Source='wrapper.ini' />
+
+							<!-- Just in case the user overwrote the port number, let's make sure it is reflected in the configuration file -->
+							<IniFile Id="WriteCommandLine"
+                       Action="addLine"
+                       Directory="INSTALLFOLDER"
+                       Key="CommandLine"
+                       Name="selenium-node.cfg"
+                       Section="Unit"
+                       Value='java -jar &quot;[#FL_selenium.jar]&quot; -role node -port [SELENIUM_PORT] -hub [SELENIUM_HUB_BASEURL]grid/register' />
+
+							<!-- The service accounts needs permissions to this directory -->
+							<CreateFolder>
+								<util:PermissionEx User='[SERVICEACCOUNT]'
+                                   GenericExecute='yes'
+                                   GenericRead='yes'
+                                   GenericWrite='yes' />
+							</CreateFolder>
+
+							<!-- Ensure that we preserve the URL so that Windows doesn't accidentially use this port when assigning random client ports -->
+							<http:UrlReservation Url="http://+:[SELENIUM_PORT]/" HandleExisting="ignore">
+								<http:UrlAce SecurityPrincipal="Everyone" Rights="all" />
+							</http:UrlReservation>
+
+							<!-- We need to clean up after ourselves -->
+							<RemoveFile Id='RemoveConfigurationFile'
+                          On='uninstall'
+                          Name='selenium-node.cfg' />
+							<RemoveFile Id='RemoveLogFile'
+                          On='uninstall'
+                          Name='selenium-node.log' />
+
+
+							<!-- 
+              Ensure the firewall will allow traffic. Unfortunally we can't 
+              deny public traffic since the extension does not support it. 
+              Instead of creating an "all" rule, we'll create the public
+              rule and allow the user to deny the rule. 
+              
+              The public rule is considered dangerous if someone was to 
+              install the node on their local computers and they then visit
+              the local coffee shop. Anyone in the coffee shop will be able 
+              to connect to the Selenium node and if there are vulnerabilities
+              potentially exploit it. 
+              
+              But allowing "public" traffic should be ok within the confounds
+              of a corporate network where security devices restrict access.
+              -->
+							<firewall:FirewallException Id="FW_Domain"
+                                           Description="Allows connections from the Selenium hub to the Selenium node in order to perform browser based testing."
+                                           Name="Phaka Selenium Node (Domain: Tcp-In)"
+                                           Port="[SELENIUM_PORT]"
+                                           Profile="domain"
+                                           Scope="any"
+                                           Protocol="tcp" />
+
+							<firewall:FirewallException Id="FW_Private"
+                                          Description="Allows connections from the Selenium hub to the Selenium node in order to perform browser based testing."
+                                          Name="Phaka Selenium Node (Private: Tcp-In)"
+                                          Port="[SELENIUM_PORT]"
+                                          Profile="private"
+                                          Scope="any"
+                                          Protocol="tcp" />
+
+							<!-- TODO: We need to create, but deny this rule -->
+							<firewall:FirewallException Id="FW_Public"
+                                          Description="Allows connections from the Selenium hub to the Selenium node in order to perform browser based testing."
+                                          Name="Phaka Selenium Node (Public: Tcp-In)"
+                                          Port="[SELENIUM_PORT]"
+                                          Profile="public"
+                                          Scope="any"
+                                          Protocol="tcp" />
+
+							<!-- 
+							Create a user for the Windows Service. It is a really bad idea to run 
+							Selenium as Local System, because if its compromised, so is the host 
+							and all the data in it.
+							
+							If this is a domain user and the process is compromised, then the 
+							attacker may be able to connect to Windows Active Directory and 
+							mine it for information which could in turn be used to compromise
+							the organization.
+							-->
+							<util:User Id="SeleniumUser"
+                         UpdateIfExists="yes"
+                         CreateUser="yes"
+                         Name="[SERVICEACCOUNT]"
+                         Password="[SERVICEPASSWORD]"
+                         LogonAsService="yes"
+                         CanNotChangePassword="yes"
+                         PasswordNeverExpires="yes" />
+
+							<!-- 
+              Run Selenium as a Windows Service using the local user we created. 
+              -->
+							<ServiceInstall Id="ServiceInstaller"
+                              Type="ownProcess"
+                              Name="phaka-selenium-node"
+                              DisplayName="Phaka Selenium Node"
+                              Description="Manages the Selenium node process that is used for browser testing"
+                              Start="auto"
+                              Account=".\[SERVICEACCOUNT]"
+                              Password="[SERVICEPASSWORD]"
+                              ErrorControl="normal">
+
+								<!-- If the system crashes for whatever reason, just restart it. -->
+								<util:ServiceConfig FirstFailureActionType="restart"
+                                    SecondFailureActionType="restart"
+                                    ThirdFailureActionType="restart"
+                                    RestartServiceDelayInSeconds="180"
+                                    ResetPeriodInDays="7"
+                                    RebootMessage="The Selenium Node experienced issues and initiated a reboot" />
+							</ServiceInstall>
+
+							<!-- Automatically Start the Selenium service when we're done -->
+							<ServiceControl Id="StartService" Start="install" Stop="both" Remove="uninstall" Name="phaka-selenium-node" Wait="yes" />
+
+						</Component>
+						<Component Id='CL_selenium.jar' Guid='{f46bba85-c6cc-4381-99ff-f6c97b345f63}'>
+							<File Id='FL_selenium.jar' Name='selenium-server-standalone.jar' DiskId='1' Source='..\..\lib\selenium-server-standalone.jar' KeyPath='yes' />
+						</Component>
+						<Component Id='CL_chromedriver.exe' Guid='{67408b98-ef9d-4416-ac01-551823dffbf2}'>
+							<File Id='FL_chromedriver.exe' Name='chromedriver.exe' DiskId='1' Source='..\..\lib\x86\chrome\chromedriver.exe' KeyPath='yes' />
+						</Component>
+						<Component Id='CL_geckodriver.exe' Guid='{95a9c4e1-1935-4e49-9b26-240e52c5a1f9}'>
+							<File Id='FL_geckodriver.exe' Name='geckodriver.exe' DiskId='1' Source='..\..\lib\x86\gecko\geckodriver.exe' KeyPath='yes' />
+						</Component>
+						<Component Id='CL_IEDriverServer.exe' Guid='{5b138c64-f947-4c68-a166-7d9467d80881}'>
+							<File Id='FL_IEDriverServer.exe' Name='IEDriverServer.exe' DiskId='1' Source='..\..\lib\x86\internet-explorer\IEDriverServer.exe' KeyPath='yes' />
+						</Component>
+						<Component Id='CL_operadriver.exe' Guid='{c999c15c-edc8-4321-9870-a8cd26ea844d}'>
+							<File Id='FL_operadriver.exe' Name='operadriver.exe' DiskId='1' Source='..\..\lib\x86\opera\operadriver.exe' KeyPath='yes' />
+						</Component>
+					</Directory>
+				</Directory>
 			</Directory>
 		</Directory>
-	</Fragment>
-
-	<Fragment>
-		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-			<!-- <Component Id="ProductComponent"> -->
-				<!-- TODO: Insert files, registry keys, and other resources here. -->
-			<!-- </Component> -->
-		</ComponentGroup>
 	</Fragment>
 </Wix>
