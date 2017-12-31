@@ -18,9 +18,10 @@
     <Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-    <Property Id="SERVICEACCOUNT" Value="Phaka Selenium Hub" />
-    <Property Id="SERVICEPASSWORD" Value="Ph@k@-S3l3nium-Hub" Secure="yes" />
+    <Property Id="SELENIUM_SERVICE_USERNAME" Value="Phaka Selenium Hub" />
+    <Property Id="SELENIUM_SERVICE_PASSWORD" Value="Ph@k@-S3l3nium-Hub" Secure="yes" />
     <Property Id="SELENIUM_PORT" Value="4444" />
+    <Property Id="SELENIUM_ROLE" Value="Hub" />
 
     <!--
 		https://www.firegiant.com/wix/tutorial/user-interface/ui-wizardry/
@@ -33,14 +34,27 @@
 		<WixVariable Id="WixUIUpIco" Value="path\up.ico" />
 		-->
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
     <Feature Id="ProductFeature" Title="Hub" Level="1">
       <ComponentGroupRef Id="ProductComponents" />
     </Feature>
 
-    <UIRef Id="WixUI_Mondo" />
+    <UI Id="MyWixUI_Mondo">
+      <UIRef Id="WixUI_Mondo" />
+      <DialogRef Id="PasswordDlg" />
+      <DialogRef Id="PortDlg" />
+
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="PasswordDlg" Order="2">LicenseAccepted = "1"</Publish>
+      <Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
+      <Publish Dialog="PasswordDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+      <Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg">1</Publish>
+      <Publish Dialog="PortDlg" Control="Back" Event="NewDialog" Value="PasswordDlg">1</Publish>
+      <Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg">1</Publish>
+
+    </UI>
     <UIRef Id="WixUI_ErrorProgressText" />
+
   </Product>
 
   <Fragment>
@@ -71,7 +85,7 @@
 
               <!-- The service accounts needs permissions to this directory -->
               <CreateFolder>
-                <util:PermissionEx User='[SERVICEACCOUNT]' 
+                <util:PermissionEx User='[SELENIUM_SERVICE_USERNAME]' 
                                    GenericExecute='yes' 
                                    GenericRead='yes' 
                                    GenericWrite='yes' />
@@ -144,8 +158,8 @@
               <util:User Id="SeleniumUser"
                          UpdateIfExists="yes"
                          CreateUser="yes"
-                         Name="[SERVICEACCOUNT]"
-                         Password="[SERVICEPASSWORD]"
+                         Name="[SELENIUM_SERVICE_USERNAME]"
+                         Password="[SELENIUM_SERVICE_PASSWORD]"
                          LogonAsService="yes"
                          CanNotChangePassword="yes"
                          PasswordNeverExpires="yes" />
@@ -160,8 +174,8 @@
                               DisplayName="Phaka Selenium Hub"
                               Description="Manages the Selenium hub process that is used for browser testing"
                               Start="auto"
-                              Account=".\[SERVICEACCOUNT]"
-                              Password="[SERVICEPASSWORD]"
+                              Account=".\[SELENIUM_SERVICE_USERNAME]"
+                              Password="[SELENIUM_SERVICE_PASSWORD]"
                               ErrorControl="normal">
                 
                 <!-- If the system crashes for whatever reason, just restart it. If it happens for the third time, reboot -->
