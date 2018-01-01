@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:http="http://schemas.microsoft.com/wix/HttpExtension"
+     xmlns:firewall="http://schemas.microsoft.com/wix/FirewallExtension">
+
+  <Product Id="*" 
+           Name="Phaka Selenium Hub" 
+           Language="1033" 
+           Version="1.0.0.0" 
+           Manufacturer="Phaka"
+           UpgradeCode="8925250d-7292-4909-8628-26a74047aa67">
+    <Package InstallerVersion="200" 
+             Compressed="yes" 
+             InstallScope="perMachine" />
+    <Condition Message="You need to be an administrator to install this product.">AdminUser</Condition>
+    <Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <Property Id="SELENIUM_SERVICE_USERNAME" Value="Phaka Selenium Hub" />
+    <Property Id="SELENIUM_SERVICE_PASSWORD" Value="Ph@k@-S3l3nium-Hub" Secure="yes" />
+    <Property Id="SELENIUM_PORT" Value="4444" />
+    <Property Id="SELENIUM_ROLE" Value="Hub" />
+
+    <!--
+		https://www.firegiant.com/wix/tutorial/user-interface/ui-wizardry/
+		<WixVariable Id="WixUILicenseRtf" Value="path\License.rtf" />
+		<WixVariable Id="WixUIBannerBmp" Value="path\banner.bmp" />
+		<WixVariable Id="WixUIDialogBmp" Value="path\dialog.bmp" />
+		<WixVariable Id="WixUIExclamationIco" Value="path\exclamation.ico" />
+		<WixVariable Id="WixUIInfoIco" Value="path\information.ico" />
+		<WixVariable Id="WixUINewIco" Value="path\new.ico" />
+		<WixVariable Id="WixUIUpIco" Value="path\up.ico" />
+		-->
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+    <Feature Id="ProductFeature" Title="Hub" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <UI Id="MyWixUI_Mondo">
+      <UIRef Id="WixUI_Mondo" />
+      <DialogRef Id="PasswordDlg" />
+      <DialogRef Id="PortDlg" />
+
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="PasswordDlg" Order="2">LicenseAccepted = "1"</Publish>
+      <Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
+      <Publish Dialog="PasswordDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+      <Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg">1</Publish>
+      <Publish Dialog="PortDlg" Control="Back" Event="NewDialog" Value="PasswordDlg">1</Publish>
+      <Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg">1</Publish>
+
+    </UI>
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id='MANUFACTURERFOLDER' Name='Selenium'>
+          <Directory Id="INSTALLFOLDER" Name="Hub">
+            <Component Id='CL_selenium.exe' Guid='{C3BCD14F-0CD6-4891-8AA0-C5B7C630B2AA}'>
+
+              <!-- See https://github.com/Phaka/phaka-service-wrapper for more information about wrapper.exe -->
+              <File Id='FL_Selenium.exe' 
+                    Name='selenium-hub.exe' 
+                    DiskId='1'
+                    Source='..\..\lib\x64\wrapper\wrapper.exe'
+                    KeyPath='yes' />
+
+              <!-- The  IniFile custom action will not create the file, so we need to do it. Be careful of encodings, since Windows refuses to read a INI file with a UTF-8 encoding with a BOM -->
+              <File Id='FL_selenium.cfg' Name='selenium-hub.cfg' DiskId='1' Source='wrapper.ini' />
+
+              <!-- Just in case the user overwrote the port number, let's make sure it is reflected in the configuration file -->
+              <IniFile Id="WriteCommandLine" 
+                       Action="addLine" 
+                       Directory="INSTALLFOLDER"
+                       Key="CommandLine" 
+                       Name="selenium-hub.cfg"
+                       Section="Unit" 
+                       Value='java -jar &quot;[#FL_selenium.jar]&quot; -role hub -port [SELENIUM_PORT]' />
+
+              <!-- The service accounts needs permissions to this directory -->
+              <CreateFolder>
+                <util:PermissionEx User='[SELENIUM_SERVICE_USERNAME]' 
+                                   GenericExecute='yes' 
+                                   GenericRead='yes' 
+                                   GenericWrite='yes' />
+              </CreateFolder>
+              
+              <!-- Ensure that we preserve the URL so that Windows doesn't accidentially use this port when assigning random client ports -->
+              <http:UrlReservation Url="http://+:[SELENIUM_PORT]/" HandleExisting="ignore">
+                <http:UrlAce SecurityPrincipal="Everyone" Rights="all" />
+              </http:UrlReservation>
+
+              <!-- We need to clean up after ourselves -->
+              <RemoveFile Id='RemoveConfigurationFile' 
+                          On='uninstall' 
+                          Name='selenium-hub.cfg' />
+              <RemoveFile Id='RemoveLogFile' 
+                          On='uninstall' 
+                          Name='selenium-hub.log' />
+
+
+              <!-- 
+              Ensure the firewall will allow traffic. Unfortunally we can't 
+              deny public traffic since the extension does not support it. 
+              Instead of creating an "all" rule, we'll create the public
+              rule and allow the user to deny the rule. 
+              
+              The public rule is considered dangerous if someone was to 
+              install the hub on their local computers and they then visit
+              the local coffee shop. Anyone in the coffee shop will be able 
+              to connect to the Selenium Hub and if there are vulnerabilities
+              potentially exploit it. 
+              
+              But allowing "public" traffic should be ok within the confounds
+              of a corporate network where security devices restrict access.
+              -->
+              <firewall:FirewallException Id="FW_Domain"
+                                           Description="Allows Selenium clients to connect to the Selenium Hub in order to perform browser based testing."
+                                           Name="Phaka Selenium Hub (Domain: Tcp-In)" 
+                                           Port="[SELENIUM_PORT]"
+                                           Profile="domain" 
+                                           Scope="any" 
+                                           Protocol="tcp" />
+
+              <firewall:FirewallException Id="FW_Private"
+                                          Description="Allows Selenium clients to connect to the Selenium Hub in order to perform browser based testing."
+                                          Name="Phaka Selenium Hub (Private: Tcp-In)"
+                                          Port="[SELENIUM_PORT]"
+                                          Profile="private"
+                                          Scope="any"
+                                          Protocol="tcp" />
+
+              <!-- TODO: We need to create, but deny this rule -->
+              <firewall:FirewallException Id="FW_Public"
+                                          Description="Allows Selenium clients to connect to the Selenium Hub in order to perform browser based testing."
+                                          Name="Phaka Selenium Hub (Public: Tcp-In)"
+                                          Port="[SELENIUM_PORT]"
+                                          Profile="public"
+                                          Scope="any"
+                                          Protocol="tcp" />
+
+              <!-- 
+							Create a user for the Windows Service. It is a really bad idea to run 
+							Selenium as Local System, because if its compromised, so is the host 
+							and all the data in it.
+							
+							If this is a domain user and the process is compromised, then the 
+							attacker may be able to connect to Windows Active Directory and 
+							mine it for information which could in turn be used to compromise
+							the organization.
+							-->
+              <util:User Id="SeleniumUser"
+                         UpdateIfExists="yes"
+                         CreateUser="yes"
+                         Name="[SELENIUM_SERVICE_USERNAME]"
+                         Password="[SELENIUM_SERVICE_PASSWORD]"
+                         LogonAsService="yes"
+                         CanNotChangePassword="yes"
+                         PasswordNeverExpires="yes" />
+
+
+              <!-- 
+              Run Selenium as a Windows Service using the local user we created. 
+              -->
+              <ServiceInstall Id="ServiceInstaller"
+                              Type="ownProcess"
+                              Name="phaka-selenium-hub"
+                              DisplayName="Phaka Selenium Hub"
+                              Description="Manages the Selenium hub process that is used for browser testing"
+                              Start="auto"
+                              Account=".\[SELENIUM_SERVICE_USERNAME]"
+                              Password="[SELENIUM_SERVICE_PASSWORD]"
+                              ErrorControl="normal">
+                
+                <!-- If the system crashes for whatever reason, just restart it. If it happens for the third time, reboot -->
+                <util:ServiceConfig FirstFailureActionType="restart" 
+                                    SecondFailureActionType="restart"
+                                    ThirdFailureActionType="restart" 
+                                    RestartServiceDelayInSeconds="180"
+                                    ResetPeriodInDays="7"
+                                    RebootMessage="The Selenium Hub experienced issues and initiated a reboot" />
+              </ServiceInstall>
+
+              <!-- Automatically Start the Selenium service when we're done -->
+							<ServiceControl Id="StartService" Start="install" Stop="both" Remove="uninstall" Name="phaka-selenium-hub" Wait="yes" />
+
+              </Component>
+
+            <Component Id='CL_selenium.jar' Guid='{99ac8a75-3a42-4a97-9e50-494881768044}'>
+              <File Id='FL_selenium.jar' Name='selenium-server-standalone.jar' DiskId='1'
+                    Source='..\..\lib\selenium-server-standalone.jar' KeyPath='yes' />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <ComponentRef Id="CL_selenium.exe" />
+      <ComponentRef Id="CL_selenium.jar" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>
