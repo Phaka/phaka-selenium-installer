@@ -1,14 +1,12 @@
 ## System
-* Version: <!-- service wrapper version -->
-* Platform: <!-- e.g. Windows + version -->
-* Proces: <!-- The process being wrapped (if it is publicly available) -->
+* Version: <!-- Installer Version -->
+* Platform: <!-- e.g. N/A, Windows 10, Windows 7, Windows 8.1, Window Windows Server 2016, Windows Server 2012 R2 and so forth -->
+* Browser: <!-- Internet Explorer 11, Google Chrome, Firefox, Opera, Edge --> 
 
 ## Testcase
 
-Provide the nesseary test case to reproduce the issue
+Provide the necessary steps to reproduce the issue.
 
-## Trace-level log
+## Proposal
 
-<!--
-The output of the service warpper, if that is available. 
--->
+Propose a solution, if any.
