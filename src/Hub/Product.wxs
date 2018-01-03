@@ -8,7 +8,7 @@
   <Product Id="*" 
            Name="Phaka Selenium Hub" 
            Language="1033" 
-           Version="1.0.0.0" 
+           Version="1.0.1.0" 
            Manufacturer="Phaka"
            UpgradeCode="8925250d-7292-4909-8628-26a74047aa67">
     <Package InstallerVersion="200" 
@@ -40,8 +40,8 @@
 		<WixVariable Id="WixUIUpIco" Value="path\up.ico" />
 		-->
 
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
-    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="mszip" />
     <Feature Id="ProductFeature" Title="Hub" Level="1">
       <ComponentGroupRef Id="ProductComponents" />
     </Feature>
@@ -99,8 +99,11 @@
                   BinaryKey="PhakaCustomActions.CA.dll"
                   DllEntry="GeneratePassword" />
 
+    <InstallUISequence>
+      <Custom Action="GeneratePassword" After="AppSearch">1</Custom>
+    </InstallUISequence>
     <InstallExecuteSequence>
-      <Custom Action="GeneratePassword" After="InstallInitialize"></Custom>
+      <Custom Action="GeneratePassword" After="AppSearch">1</Custom>
     </InstallExecuteSequence>
 
   </Product>
@@ -110,7 +113,7 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id='MANUFACTURERFOLDER' Name='Selenium'>
           <Directory Id="INSTALLFOLDER" Name="Hub">
-            <Component Id='CL_selenium.exe' Guid='{C3BCD14F-0CD6-4891-8AA0-C5B7C630B2AA}'>
+            <Component Id='CL_selenium.exe'>
 
               <!-- See https://github.com/Phaka/phaka-service-wrapper for more information about wrapper.exe -->
               <File Id='FL_Selenium.exe' 
@@ -243,7 +246,7 @@
 
               </Component>
 
-            <Component Id='CL_selenium.jar' Guid='{99ac8a75-3a42-4a97-9e50-494881768044}'>
+            <Component Id='CL_selenium.jar'>
               <File Id='FL_selenium.jar' Name='selenium-server-standalone.jar' DiskId='1'
                     Source='..\..\lib\selenium-server-standalone.jar' KeyPath='yes' />
             </Component>

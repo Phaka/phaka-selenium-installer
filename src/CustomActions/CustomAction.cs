@@ -86,8 +86,17 @@ namespace Phaka.Selenium.Installers.CustomActions
                 isValid = false;
             else if (result.Scheme != "http")
                 isValid = false;
-            session["SELENIUM_HUB_BASEURL_VALID"] = isValid ? "1" : "0";
 
+            session["SELENIUM_HUB_BASEURL_VALID"] = isValid ? "1" : "0";
+            if (isValid)
+            {
+                // Append the 'grid/register' path
+                if (result.PathAndQuery != "grid/register")
+                {
+                    result = new Uri(result, "grid/register");
+                }
+                session["SELENIUM_HUB_BASEURL"] = result.AbsoluteUri;
+            }
             session.Log("Completed " + nameof(ValidateUrl));
             return ActionResult.Success;
         }
@@ -135,9 +144,6 @@ namespace Phaka.Selenium.Installers.CustomActions
             password = password.Trim();
             if (string.IsNullOrEmpty(password))
             {
-
-
-
                 var data = new byte[128];
                 var rng = new RNGCryptoServiceProvider();
                 rng.GetBytes(data);
