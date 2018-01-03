@@ -152,7 +152,7 @@
                        Key="CommandLine"
                        Name="selenium-node.cfg"
                        Section="Unit"
-                       Value='java -Xrs -Xmx2048m &quot;-Dwebdriver.chrome.driver=[#FL_chromedriver.exe]&quot; &quot;-Dwebdriver.gecko.driver=[#FL_geckodriver.exe]&quot; &quot;-Dwebdriver.opera.driver=[#FL_operadriver.exe]&quot; &quot;-Dwebdriver.opera.driver=[#FL_operadriver.exe]&quot;  -jar &quot;[#FL_selenium.jar]&quot; -role node -port [SELENIUM_PORT] -hub [SELENIUM_HUB_BASEURL] -nodeConfig &quot;[#FL_selenium.json]&quot;' />
+							         Value='java -Xrs -Xmx2048m &quot;-Dwebdriver.chrome.driver=[#FL_chromedriver.exe]&quot; &quot;-Dwebdriver.gecko.driver=[#FL_geckodriver.exe]&quot; &quot;-Dwebdriver.opera.driver=[#FL_operadriver.exe]&quot; &quot;-Dwebdriver.ie.driver=[#FL_IEDriverServer.exe]&quot; -jar &quot;[#FL_selenium.jar]&quot; -role node -port [SELENIUM_PORT] -hub [SELENIUM_HUB_BASEURL] -nodeConfig &quot;[#FL_selenium.json]&quot;' />
 
 							<!-- The service accounts needs permissions to this directory -->
 							<CreateFolder>
