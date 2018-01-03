@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+
+	<String Id="InvalidUsernameDlg_Title" Overridable="yes">[ProductName] Setup</String>
+	<String Id="InvalidUsernameDlgText" Overridable="yes">The username is invalid. It cannot be empty, or more than 20 characters.</String>
+	<String Id="InvalidUsernameDlgIcon" Overridable="yes">WixUI_Ico_Info</String>
+	<String Id="InvalidUsernameDlgIconTooltip" Overridable="yes">Information icon</String>
+
+	<String Id="InvalidPasswordDlg_Title" Overridable="yes">[ProductName] Setup</String>
+	<String Id="InvalidPasswordDlgText" Overridable="yes">The password is invalid. It cannot be empty, must be at least 12 characters and consist of alphanumeric and special characters.</String>
+	<String Id="InvalidPasswordDlgIcon" Overridable="yes">WixUI_Ico_Info</String>
+	<String Id="InvalidPasswordDlgIconTooltip" Overridable="yes">Information icon</String>
+
+	<String Id="InvalidPortDlg_Title" Overridable="yes">[ProductName] Setup</String>
+	<String Id="InvalidPortDlgText" Overridable="yes">The TCP/IP port is invalid. The value should be larger than 0 and less than 65536.</String>
+	<String Id="InvalidPortDlgIcon" Overridable="yes">WixUI_Ico_Info</String>
+	<String Id="InvalidPortDlgIconTooltip" Overridable="yes">Information icon</String>
+
+	<String Id="InvalidUrlDlg_Title" Overridable="yes">[ProductName] Setup</String>
+	<String Id="InvalidUrlDlgText" Overridable="yes">The url is invalid. It cannot be empty, must be well formed, and start with http.</String>
+	<String Id="InvalidUrlDlgIcon" Overridable="yes">WixUI_Ico_Info</String>
+	<String Id="InvalidUrlDlgIconTooltip" Overridable="yes">Information icon</String>
+
+</WixLocalization>

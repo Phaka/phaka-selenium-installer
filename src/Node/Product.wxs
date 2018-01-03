@@ -4,17 +4,35 @@
      xmlns:http="http://schemas.microsoft.com/wix/HttpExtension"
      xmlns:firewall="http://schemas.microsoft.com/wix/FirewallExtension">
 
-	<Product Id="*" Name="Phaka Selenium Node" Language="1033" Version="1.0.0.0" Manufacturer="Phaka" UpgradeCode="776358eb-d547-4b25-b4f6-5e364ff8e109">
+	<Product Id="*" Name="Phaka Selenium Node" Language="1033" Version="1.0.1.0" Manufacturer="Phaka" UpgradeCode="776358eb-d547-4b25-b4f6-5e364ff8e109">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
-		<Condition Message="You need to be an administrator to install this product.">AdminUser</Condition>
+		<Condition Message="You need to be an administrator to install this product.">Privileged</Condition>
 		<Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
-		
+
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-		<Property Id="SELENIUM_SERVICE_USERNAME" Value="Phaka Selenium Node" />
-		<Property Id="SELENIUM_SERVICE_PASSWORD" Value="Ph@k@-S3l3nium-N0de" Secure="yes" />
+		<Property Id="SELENIUM_SERVICE_USERNAME" Value="selenium-node" />
+		<Property Id="SELENIUM_SERVICE_USERNAME_VALID" Value="0" />
+		<Property Id="SELENIUM_SERVICE_PASSWORD" Value=" " Secure="yes" />
+		<Property Id="SELENIUM_SERVICE_PASSWORD_VALID" Value="0" />
 		<Property Id="SELENIUM_PORT" Value="5555" />
+		<Property Id="SELENIUM_PORT_VALID" Value="0" />
 		<Property Id="SELENIUM_HUB_BASEURL" Value="http://localhost:4444/" />
-		<Property Id="SELENIUM_ROLE" Value="Node" />
+		<Property Id="SELENIUM_HUB_BASEURL_VALID" Value="0" />
+		<Property Id="SELENIUM_ROLE" Value="Node" Hidden="yes" />
+
+
+		<!--
+		https://www.firegiant.com/wix/tutorial/user-interface/ui-wizardry/
+    -->
+		<WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+		<!--
+    <WixVariable Id="WixUIBannerBmp" Value="path\banner.bmp" />
+		<WixVariable Id="WixUIDialogBmp" Value="path\dialog.bmp" />
+		<WixVariable Id="WixUIExclamationIco" Value="path\exclamation.ico" />
+		<WixVariable Id="WixUIInfoIco" Value="path\information.ico" />
+		<WixVariable Id="WixUINewIco" Value="path\new.ico" />
+		<WixVariable Id="WixUIUpIco" Value="path\up.ico" />
+		-->
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
 		<MediaTemplate EmbedCab="yes"  CompressionLevel="high" />
@@ -22,20 +40,10 @@
 		<Feature Id="ProductFeature" Title="Selenium Node" Level="1" Display="expand" Description="Installs a Selenium node on the local machine.">
 			<ComponentRef Id="CL_selenium.exe" />
 			<ComponentRef Id="CL_selenium.jar" />
-			<Feature Id='DriversFeature' Level='1' Title='Web Drivers' Display='expand' Description='Install Web Drivers on the local computer'>
-				<Feature Id='ChromeDriverFeature' Title='Chrome Web Driver' Display='expand' Description='Installs the Chrome Web Driver used to automate Chrome' Level='1'>
-					<ComponentRef Id="CL_chromedriver.exe" />
-				</Feature>
-				<Feature Id='GeckoDriverFeature' Title='Gecko Web Driver' Display='expand' Description='Installs the Gecko Web Driver used to automate Firefox' Level='1'>
-					<ComponentRef Id="CL_geckodriver.exe" />
-				</Feature>
-				<Feature Id='IEDriverFeature' Title='Internet Explorer Web Driver' Display='expand' Description='Installs the Internet Explorer Web Driver' Level='1'>
-					<ComponentRef Id="CL_IEDriverServer.exe" />
-				</Feature>
-				<Feature Id='OperaDriverFeature' Title='Opera Web Driver' Display='expand' Description='Installs the Opera Web Driver' Level='1'>
-					<ComponentRef Id="CL_operadriver.exe" />
-				</Feature>
-			</Feature>
+			<ComponentRef Id="CL_chromedriver.exe" />
+			<ComponentRef Id="CL_geckodriver.exe" />
+			<ComponentRef Id="CL_IEDriverServer.exe" />
+			<ComponentRef Id="CL_operadriver.exe" />
 		</Feature>
 
 		<UI Id="MyWixUI_Mondo">
@@ -45,16 +53,61 @@
 			<DialogRef Id="UrlDlg" />
 
 			<Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="PasswordDlg" Order="2">LicenseAccepted = "1"</Publish>
-			<Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
+			<Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="UrlDlg">1</Publish>
 			<Publish Dialog="PasswordDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
-			<Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg">1</Publish>
+			<Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg" Order="100">SELENIUM_SERVICE_USERNAME_VALID = "1" AND SELENIUM_SERVICE_PASSWORD_VALID = "1"</Publish>
 			<Publish Dialog="PortDlg" Control="Back" Event="NewDialog" Value="PasswordDlg">1</Publish>
-			<Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="UrlDlg">1</Publish>
+			<Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="UrlDlg" Order="100">SELENIUM_PORT_VALID = "1"</Publish>
 			<Publish Dialog="UrlDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
-			<Publish Dialog="UrlDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg">1</Publish>
+			<Publish Dialog="UrlDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg" Order="100">SELENIUM_HUB_BASEURL_VALID = "1"</Publish>
 
 		</UI>
 		<UIRef Id="WixUI_ErrorProgressText" />
+
+		<Binary Id="PhakaCustomActions.CA.dll" SourceFile="$(var.CustomActions.TargetDir)\PhakaCustomActions.CA.dll" />
+
+		<CustomAction Id="ValidateUsername"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidateUsername" />
+
+		<CustomAction Id="ValidatePassword"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidatePassword" />
+
+		<CustomAction Id="ValidatePortNumber"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidatePortNumber" />
+
+		<CustomAction Id="ValidateUrl"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidateUrl" />
+
+		<CustomAction Id="TestUrl"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="TestUrl" />
+
+		<CustomAction Id="GeneratePassword"
+		              Return="check"
+		              Execute="firstSequence"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="GeneratePassword" />
+
+		<InstallUISequence>
+			<Custom Action="GeneratePassword" After="AppSearch">1</Custom>
+		</InstallUISequence>
+		<InstallExecuteSequence>
+			<Custom Action="GeneratePassword" After="AppSearch">1</Custom>
+		</InstallExecuteSequence>
 
 	</Product>
 
@@ -77,7 +130,7 @@
 			<Directory Id="ProgramFilesFolder">
 				<Directory Id='MANUFACTURERFOLDER' Name='Selenium'>
 					<Directory Id="INSTALLFOLDER" Name="Node">
-						<Component Id='CL_selenium.exe' Guid='{8D393038-91BD-4751-8ABE-1286A29EA62F}'>
+						<Component Id='CL_selenium.exe'>
 
 							<!-- See https://github.com/Phaka/phaka-service-wrapper for more information about wrapper.exe -->
 							<File Id='FL_Selenium.exe'
@@ -89,6 +142,9 @@
 							<!-- The  IniFile custom action will not create the file, so we need to do it. Be careful of encodings, since Windows refuses to read a INI file with a UTF-8 encoding with a BOM -->
 							<File Id='FL_selenium.cfg' Name='selenium-node.cfg' DiskId='1' Source='wrapper.ini' />
 
+							<!-- The selenium.json is the configuration for the node itself, not the Windows Service-->
+							<File Id='FL_selenium.json' Name='selenium.json' DiskId='1' Source='selenium.json' />
+
 							<!-- Just in case the user overwrote the port number, let's make sure it is reflected in the configuration file -->
 							<IniFile Id="WriteCommandLine"
                        Action="addLine"
@@ -96,7 +152,7 @@
                        Key="CommandLine"
                        Name="selenium-node.cfg"
                        Section="Unit"
-                       Value='java -jar &quot;[#FL_selenium.jar]&quot; -role node -port [SELENIUM_PORT] -hub [SELENIUM_HUB_BASEURL]grid/register' />
+                       Value='java -Xrs -Xmx2048m &quot;-Dwebdriver.chrome.driver=[#FL_chromedriver.exe]&quot; &quot;-Dwebdriver.gecko.driver=[#FL_geckodriver.exe]&quot; &quot;-Dwebdriver.opera.driver=[#FL_operadriver.exe]&quot; &quot;-Dwebdriver.opera.driver=[#FL_operadriver.exe]&quot;  -jar &quot;[#FL_selenium.jar]&quot; -role node -port [SELENIUM_PORT] -hub [SELENIUM_HUB_BASEURL] -nodeConfig &quot;[#FL_selenium.json]&quot;' />
 
 							<!-- The service accounts needs permissions to this directory -->
 							<CreateFolder>
@@ -205,19 +261,19 @@
 							<ServiceControl Id="StartService" Start="install" Stop="both" Remove="uninstall" Name="phaka-selenium-node" Wait="yes" />
 
 						</Component>
-						<Component Id='CL_selenium.jar' Guid='{f46bba85-c6cc-4381-99ff-f6c97b345f63}'>
+						<Component Id='CL_selenium.jar'>
 							<File Id='FL_selenium.jar' Name='selenium-server-standalone.jar' DiskId='1' Source='..\..\lib\selenium-server-standalone.jar' KeyPath='yes' />
 						</Component>
-						<Component Id='CL_chromedriver.exe' Guid='{67408b98-ef9d-4416-ac01-551823dffbf2}'>
+						<Component Id='CL_chromedriver.exe'>
 							<File Id='FL_chromedriver.exe' Name='chromedriver.exe' DiskId='1' Source='..\..\lib\x86\chrome\chromedriver.exe' KeyPath='yes' />
 						</Component>
-						<Component Id='CL_geckodriver.exe' Guid='{95a9c4e1-1935-4e49-9b26-240e52c5a1f9}'>
+						<Component Id='CL_geckodriver.exe'>
 							<File Id='FL_geckodriver.exe' Name='geckodriver.exe' DiskId='1' Source='..\..\lib\x86\gecko\geckodriver.exe' KeyPath='yes' />
 						</Component>
-						<Component Id='CL_IEDriverServer.exe' Guid='{5b138c64-f947-4c68-a166-7d9467d80881}'>
+						<Component Id='CL_IEDriverServer.exe'>
 							<File Id='FL_IEDriverServer.exe' Name='IEDriverServer.exe' DiskId='1' Source='..\..\lib\x86\internet-explorer\IEDriverServer.exe' KeyPath='yes' />
 						</Component>
-						<Component Id='CL_operadriver.exe' Guid='{c999c15c-edc8-4321-9870-a8cd26ea844d}'>
+						<Component Id='CL_operadriver.exe'>
 							<File Id='FL_operadriver.exe' Name='operadriver.exe' DiskId='1' Source='..\..\lib\x86\opera\operadriver.exe' KeyPath='yes' />
 						</Component>
 					</Directory>

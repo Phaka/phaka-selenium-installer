@@ -9,6 +9,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Node", "src\Node\Node.wixpr
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "UI", "src\UI\UI.wixproj", "{B3FF87CD-125F-47F1-8FE1-3098E5F5CFAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomActions", "src\CustomActions\CustomActions.csproj", "{174CC1CD-F4AB-4683-9403-454A7DCAD0BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -27,6 +29,10 @@ Global
 		{B3FF87CD-125F-47F1-8FE1-3098E5F5CFAA}.Debug|x86.Build.0 = Debug|x86
 		{B3FF87CD-125F-47F1-8FE1-3098E5F5CFAA}.Release|x86.ActiveCfg = Release|x86
 		{B3FF87CD-125F-47F1-8FE1-3098E5F5CFAA}.Release|x86.Build.0 = Release|x86
+		{174CC1CD-F4AB-4683-9403-454A7DCAD0BF}.Debug|x86.ActiveCfg = Debug|x86
+		{174CC1CD-F4AB-4683-9403-454A7DCAD0BF}.Debug|x86.Build.0 = Debug|x86
+		{174CC1CD-F4AB-4683-9403-454A7DCAD0BF}.Release|x86.ActiveCfg = Release|x86
+		{174CC1CD-F4AB-4683-9403-454A7DCAD0BF}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
