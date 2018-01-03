@@ -8,6 +8,7 @@ namespace Phaka.Selenium.Installers.CustomActions
     using System.Security.Cryptography;
     using System.Text;
     using Microsoft.Deployment.WindowsInstaller;
+    using Microsoft.Win32;
 
     public class CustomActions
     {
@@ -175,11 +176,85 @@ namespace Phaka.Selenium.Installers.CustomActions
             {
                 session.Log("The 'SELENIUM_SERVICE_PASSWORD' property already has a value and will not be replaced.");
             }
-
+            
             session.Log("Completed " + nameof(GeneratePassword));
             return ActionResult.Success;
         }
-    }
 
-   
+        [CustomAction]
+        public static ActionResult ConfigureProtectedMode(Session session)
+        {
+            //
+            //
+            //# Enure Protected Mode is enabled everywhere
+            // # Zone 0 - My Computer
+            // # Zone 1 - Local Intranet Zone
+            // # Zone 2 - Trusted sites Zone
+            // # Zone 3 - Internet Zone
+            // # Zone 4 - Restricted Sites Zone
+            // # https://support.microsoft.com/en-us/help/182569/internet-explorer-security-zones-registry-entries-for-advanced-users
+
+            int[] zones = { 0, 1, 2, 3, 4 };
+            foreach (var zone in zones)
+            {
+                var zoneName = GetInternetZoneName(zone);
+
+                var keyName = $"HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Zones\\{zone}";
+                Registry.SetValue(keyName, "2500", 0, RegistryValueKind.DWord);
+                session.Log("Turned on 'Protected Settings' for 'Local Machine' in zone '{0}'", zoneName);
+            }
+
+            var names = Registry.Users.GetSubKeyNames();
+            foreach (var name in names)
+            {
+                foreach (var zone in zones)
+                {
+                    var zoneName = GetInternetZoneName(zone);
+                    var keyName = $"HKEY_USERS\\{name}\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Zones\\{zone}";
+                    Registry.SetValue(
+                            keyName,
+                            "2500", 
+                            0,  
+                            RegistryValueKind.DWord);
+
+                    session.Log("Turned on 'Protected Settings' for user '{1}' in zone '{0}'", zoneName, name);
+                }
+            }
+
+            return ActionResult.Success;
+        }
+
+        private static string GetInternetZoneName(int zone)
+        {
+            string zoneName = "My Computer";
+            switch (zone)
+            {
+                case 0:
+                    zoneName = "My Computer";
+                    break;
+
+                case 1:
+                    zoneName = "Local Intranet Zone";
+                    break;
+
+                case 2:
+                    zoneName = "Trusted sites Zone";
+                    break;
+
+                case 3:
+                    zoneName = "Internet Zone";
+                    break;
+
+                case 4:
+                    zoneName = "Restricted Sites Zone";
+                    break;
+
+                default:
+                    zoneName = "Unknown";
+                    break;
+            }
+
+            return zoneName;
+        }
+    }
 }

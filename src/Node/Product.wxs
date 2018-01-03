@@ -102,11 +102,20 @@
 		              BinaryKey="PhakaCustomActions.CA.dll"
 		              DllEntry="GeneratePassword" />
 
+		<CustomAction Id="ConfigureProtectedMode"
+		              Return="check"
+		              Execute="deferred"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ConfigureProtectedMode" />
+
+		
+
 		<InstallUISequence>
 			<Custom Action="GeneratePassword" After="AppSearch">1</Custom>
 		</InstallUISequence>
 		<InstallExecuteSequence>
 			<Custom Action="GeneratePassword" After="AppSearch">1</Custom>
+			<Custom Action="ConfigureProtectedMode" Before="InstallFinalize">NOT Installed</Custom>
 		</InstallExecuteSequence>
 
 	</Product>
