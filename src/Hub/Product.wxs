@@ -28,8 +28,11 @@
 
     <!--
 		https://www.firegiant.com/wix/tutorial/user-interface/ui-wizardry/
-		<WixVariable Id="WixUILicenseRtf" Value="path\License.rtf" />
-		<WixVariable Id="WixUIBannerBmp" Value="path\banner.bmp" />
+    -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    
+    <!--
+    <WixVariable Id="WixUIBannerBmp" Value="path\banner.bmp" />
 		<WixVariable Id="WixUIDialogBmp" Value="path\dialog.bmp" />
 		<WixVariable Id="WixUIExclamationIco" Value="path\exclamation.ico" />
 		<WixVariable Id="WixUIInfoIco" Value="path\information.ico" />
@@ -98,10 +101,6 @@
 
     <InstallExecuteSequence>
       <Custom Action="GeneratePassword" After="InstallInitialize"></Custom>
-      <!--<Custom Action="ValidateCredentials" Before="InstallFinalize">NOT Installed</Custom>
-      <Custom Action="ValidatePortNumber" Before="InstallFinalize">NOT Installed</Custom>
-      <Custom Action="TestUrl" Before="InstallFinalize">NOT Installed</Custom>
-      <Custom Action="ValidateUrl" Before="InstallFinalize">NOT Installed</Custom>-->
     </InstallExecuteSequence>
 
   </Product>
