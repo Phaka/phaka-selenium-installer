@@ -19,6 +19,8 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="InvalidUrlDlg.wxs" />
+    <Compile Include="InvalidPortDlg.wxs" />
     <Compile Include="InvalidPasswordDlg.wxs" />
     <Compile Include="InvalidUsernameDlg.wxs" />
     <Compile Include="UrlDlg.wxs" />

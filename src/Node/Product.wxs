@@ -8,12 +8,16 @@
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 		<Condition Message="You need to be an administrator to install this product.">AdminUser</Condition>
 		<Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
-		
+
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
 		<Property Id="SELENIUM_SERVICE_USERNAME" Value="selenium-node" />
-		<Property Id="SELENIUM_SERVICE_PASSWORD" />
+		<Property Id="SELENIUM_SERVICE_USERNAME_VALID" Value="0" />
+		<Property Id="SELENIUM_SERVICE_PASSWORD" Secure="yes" />
+		<Property Id="SELENIUM_SERVICE_PASSWORD_VALID" Value="0" />
 		<Property Id="SELENIUM_PORT" Value="5555" />
+		<Property Id="SELENIUM_PORT_VALID" Value="0" />
 		<Property Id="SELENIUM_HUB_BASEURL" Value="http://localhost:4444/" />
+		<Property Id="SELENIUM_HUB_BASEURL_VALID" Value="0" />
 		<Property Id="SELENIUM_ROLE" Value="Node" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." AllowSameVersionUpgrades="yes" />
@@ -45,17 +49,16 @@
 			<DialogRef Id="UrlDlg" />
 
 			<Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="PasswordDlg" Order="2">LicenseAccepted = "1"</Publish>
-			<Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
+			<Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="UrlDlg">1</Publish>
 			<Publish Dialog="PasswordDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
-			<Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg">1</Publish>
+			<Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg" Order="100">SELENIUM_SERVICE_USERNAME_VALID = "1" AND SELENIUM_SERVICE_PASSWORD_VALID = "1"</Publish>
 			<Publish Dialog="PortDlg" Control="Back" Event="NewDialog" Value="PasswordDlg">1</Publish>
-			<Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="UrlDlg">1</Publish>
+			<Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="UrlDlg" Order="100">SELENIUM_PORT_VALID = "1"</Publish>
 			<Publish Dialog="UrlDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
-			<Publish Dialog="UrlDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg">1</Publish>
+			<Publish Dialog="UrlDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg" Order="100">SELENIUM_HUB_BASEURL_VALID = "1"</Publish>
 
 		</UI>
 		<UIRef Id="WixUI_ErrorProgressText" />
-
 
 		<Binary Id="PhakaCustomActions.CA.dll" src="$(var.CustomActions.TargetDir)\PhakaCustomActions.CA.dll" />
 
@@ -94,6 +97,10 @@
 		              Execute="immediate"
 		              BinaryKey="PhakaCustomActions.CA.dll"
 		              DllEntry="GeneratePassword" />
+
+		<InstallExecuteSequence>
+			<Custom Action="GeneratePassword" After="InstallInitialize"></Custom>
+		</InstallExecuteSequence>
 
 	</Product>
 

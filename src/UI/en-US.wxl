@@ -11,4 +11,14 @@
 	<String Id="InvalidPasswordDlgIcon" Overridable="yes">WixUI_Ico_Info</String>
 	<String Id="InvalidPasswordDlgIconTooltip" Overridable="yes">Information icon</String>
 
+	<String Id="InvalidPortDlg_Title" Overridable="yes">[ProductName] Setup</String>
+	<String Id="InvalidPortDlgText" Overridable="yes">The TCP/IP port is invalid. The value should be larger than 0 and less than 65536.</String>
+	<String Id="InvalidPortDlgIcon" Overridable="yes">WixUI_Ico_Info</String>
+	<String Id="InvalidPortDlgIconTooltip" Overridable="yes">Information icon</String>
+
+	<String Id="InvalidUrlDlg_Title" Overridable="yes">[ProductName] Setup</String>
+	<String Id="InvalidUrlDlgText" Overridable="yes">The url is invalid. It cannot be empty, must be well formed, and start with http.</String>
+	<String Id="InvalidUrlDlgIcon" Overridable="yes">WixUI_Ico_Info</String>
+	<String Id="InvalidUrlDlgIconTooltip" Overridable="yes">Information icon</String>
+
 </WixLocalization>

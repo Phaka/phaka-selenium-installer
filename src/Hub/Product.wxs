@@ -19,9 +19,12 @@
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <Property Id="SELENIUM_SERVICE_USERNAME" Value="selenium-hub" />
-    <Property Id="SELENIUM_SERVICE_PASSWORD" />
+    <Property Id="SELENIUM_SERVICE_USERNAME_VALID" Value="0" />
+    <Property Id="SELENIUM_SERVICE_PASSWORD" Secure="yes" />
+    <Property Id="SELENIUM_SERVICE_PASSWORD_VALID" Value="0" />
     <Property Id="SELENIUM_PORT" Value="4444" />
-    <Property Id="SELENIUM_ROLE" Value="Hub" />
+    <Property Id="SELENIUM_PORT_VALID" Value="0" />
+    <Property Id="SELENIUM_ROLE" Value="Hub" Hidden="yes" />
 
     <!--
 		https://www.firegiant.com/wix/tutorial/user-interface/ui-wizardry/
@@ -48,9 +51,9 @@
       <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="PasswordDlg" Order="2">LicenseAccepted = "1"</Publish>
       <Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
       <Publish Dialog="PasswordDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
-      <Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg" Order="7"><![CDATA[SELENIUM_SERVICE_USERNAME_VALID = "1" AND SELENIUM_SERVICE_PASSWORD_VALID = "1"]]></Publish>
+      <Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg" Order="100">SELENIUM_SERVICE_USERNAME_VALID = "1" AND SELENIUM_SERVICE_PASSWORD_VALID = "1"</Publish>
       <Publish Dialog="PortDlg" Control="Back" Event="NewDialog" Value="PasswordDlg">1</Publish>
-      <Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg">1</Publish>
+      <Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg" Order="100">SELENIUM_PORT_VALID = "1"</Publish>
 
     </UI>
     <UIRef Id="WixUI_ErrorProgressText" />
@@ -94,7 +97,7 @@
                   DllEntry="GeneratePassword" />
 
     <InstallExecuteSequence>
-      <Custom Action="GeneratePassword" Before="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="GeneratePassword" After="InstallInitialize"></Custom>
       <!--<Custom Action="ValidateCredentials" Before="InstallFinalize">NOT Installed</Custom>
       <Custom Action="ValidatePortNumber" Before="InstallFinalize">NOT Installed</Custom>
       <Custom Action="TestUrl" Before="InstallFinalize">NOT Installed</Custom>

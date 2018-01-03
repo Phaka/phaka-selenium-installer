@@ -131,31 +131,44 @@ namespace Phaka.Selenium.Installers.CustomActions
         {
             session.Log("Begin " + nameof(GeneratePassword));
 
-            var data = new byte[128];
-            var rng = new RNGCryptoServiceProvider();
-            rng.GetBytes(data);
-
-            byte[] buffer = null;
-            var alphabet = "abcdefghjkmnpqrstvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()[]{}\\/:'?<>'~`";
-            var max = byte.MaxValue - (byte.MaxValue + 1) % alphabet.Length;
-            var result = new char[24];
-
-            for (var i = 0; i < 24; i++)
+            var password = session["SELENIUM_SERVICE_PASSWORD"];
+            password = password.Trim();
+            if (string.IsNullOrEmpty(password))
             {
-                var b = data[i];
-                while (b > max)
-                {
-                    if (buffer == null)
-                        buffer = new byte[1];
 
-                    rng.GetBytes(buffer);
-                    b = buffer[0];
+
+
+                var data = new byte[128];
+                var rng = new RNGCryptoServiceProvider();
+                rng.GetBytes(data);
+
+                byte[] buffer = null;
+                var alphabet = "abcdefghjkmnpqrstvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()[]{}\\/:'?<>'~`";
+                var max = byte.MaxValue - (byte.MaxValue + 1) % alphabet.Length;
+                var result = new char[24];
+
+                for (var i = 0; i < 24; i++)
+                {
+                    var b = data[i];
+                    while (b > max)
+                    {
+                        if (buffer == null)
+                            buffer = new byte[1];
+
+                        rng.GetBytes(buffer);
+                        b = buffer[0];
+                    }
+
+                    result[i] = alphabet[b % alphabet.Length];
                 }
 
-                result[i] = alphabet[b % alphabet.Length];
+                var s = new string(result);
+                session["SELENIUM_SERVICE_PASSWORD"] = s;
             }
-
-            var s = new string(result);
+            else
+            {
+                session.Log("The 'SELENIUM_SERVICE_PASSWORD' property already has a value and will not be replaced.");
+            }
 
             session.Log("Completed " + nameof(GeneratePassword));
             return ActionResult.Success;

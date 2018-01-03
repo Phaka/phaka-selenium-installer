@@ -6,7 +6,12 @@
         <Control Id="UrlLabel" Type="Text" X="45" Y="73" Width="100" Height="15" TabSkip="no" Text="Selenium Hub &amp;Address:" />
         <Control Id="UrlEdit" Type="Edit" X="45" Y="85" Width="220" Height="18" Property="SELENIUM_HUB_BASEURL" Text="{4096}" />
         <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Text="&amp;Back" />
-        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next" />
+        <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="&amp;Next">
+          <Publish Event="DoAction" Value="ValidateUrl" Order="1">1</Publish>
+          <Publish Property="SELENIUM_HUB_BASEURL_VALID" Value="[SELENIUM_HUB_BASEURL_VALID]" Order="2">1</Publish>
+          <Publish Property="SELENIUM_HUB_BASEURL" Value="[SELENIUM_HUB_BASEURL]" Order="3">1</Publish>
+          <Publish Event="SpawnDialog" Value="InvalidUrlDlg" Order="4"><![CDATA[SELENIUM_HUB_BASEURL_VALID<>"1"]]></Publish>
+        </Control>
         <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Cancel="yes" Text="Cancel">
           <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
         </Control>
