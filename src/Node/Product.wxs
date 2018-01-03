@@ -10,8 +10,8 @@
 		<Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
 		
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-		<Property Id="SELENIUM_SERVICE_USERNAME" Value="Phaka Selenium Node" />
-		<Property Id="SELENIUM_SERVICE_PASSWORD" Value="Ph@k@-S3l3nium-N0de" Secure="yes" />
+		<Property Id="SELENIUM_SERVICE_USERNAME" Value="selenium-node" />
+		<Property Id="SELENIUM_SERVICE_PASSWORD" />
 		<Property Id="SELENIUM_PORT" Value="5555" />
 		<Property Id="SELENIUM_HUB_BASEURL" Value="http://localhost:4444/" />
 		<Property Id="SELENIUM_ROLE" Value="Node" />
@@ -56,6 +56,45 @@
 		</UI>
 		<UIRef Id="WixUI_ErrorProgressText" />
 
+
+		<Binary Id="PhakaCustomActions.CA.dll" src="$(var.CustomActions.TargetDir)\PhakaCustomActions.CA.dll" />
+
+		<CustomAction Id="ValidateUsername"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidateUsername" />
+
+		<CustomAction Id="ValidatePassword"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidatePassword" />
+
+		<CustomAction Id="ValidatePortNumber"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidatePortNumber" />
+
+		<CustomAction Id="ValidateUrl"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="ValidateUrl" />
+
+		<CustomAction Id="TestUrl"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="TestUrl" />
+
+		<CustomAction Id="GeneratePassword"
+		              Return="check"
+		              Execute="immediate"
+		              BinaryKey="PhakaCustomActions.CA.dll"
+		              DllEntry="GeneratePassword" />
+
 	</Product>
 
 	<!-- 
@@ -89,6 +128,9 @@
 							<!-- The  IniFile custom action will not create the file, so we need to do it. Be careful of encodings, since Windows refuses to read a INI file with a UTF-8 encoding with a BOM -->
 							<File Id='FL_selenium.cfg' Name='selenium-node.cfg' DiskId='1' Source='wrapper.ini' />
 
+							<!-- The selenium.json is the configuration for the node itself, not the Windows Service-->
+							<File Id='FL_selenium.json' Name='selenium.json' DiskId='1' Source='selenium.json' />
+
 							<!-- Just in case the user overwrote the port number, let's make sure it is reflected in the configuration file -->
 							<IniFile Id="WriteCommandLine"
                        Action="addLine"
@@ -96,7 +138,7 @@
                        Key="CommandLine"
                        Name="selenium-node.cfg"
                        Section="Unit"
-                       Value='java -jar &quot;[#FL_selenium.jar]&quot; -role node -port [SELENIUM_PORT] -hub [SELENIUM_HUB_BASEURL]grid/register' />
+                       Value='java -Xrs -Xmx2048m -jar &quot;[#FL_selenium.jar]&quot; -role node -port [SELENIUM_PORT] -hub [SELENIUM_HUB_BASEURL]grid/register -nodeConfig &quot;[#FL_selenium.json]&quot;' />
 
 							<!-- The service accounts needs permissions to this directory -->
 							<CreateFolder>

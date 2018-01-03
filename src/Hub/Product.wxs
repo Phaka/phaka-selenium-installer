@@ -18,8 +18,8 @@
     <Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
-    <Property Id="SELENIUM_SERVICE_USERNAME" Value="Phaka Selenium Hub" />
-    <Property Id="SELENIUM_SERVICE_PASSWORD" Value="Ph@k@-S3l3nium-Hub" Secure="yes" />
+    <Property Id="SELENIUM_SERVICE_USERNAME" Value="selenium-hub" />
+    <Property Id="SELENIUM_SERVICE_PASSWORD" />
     <Property Id="SELENIUM_PORT" Value="4444" />
     <Property Id="SELENIUM_ROLE" Value="Hub" />
 
@@ -48,12 +48,58 @@
       <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="PasswordDlg" Order="2">LicenseAccepted = "1"</Publish>
       <Publish Dialog="SetupTypeDlg" Control="Back" Event="NewDialog" Value="PortDlg">1</Publish>
       <Publish Dialog="PasswordDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
-      <Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg">1</Publish>
+      <Publish Dialog="PasswordDlg" Control="Next" Event="NewDialog" Value="PortDlg" Order="7"><![CDATA[SELENIUM_SERVICE_USERNAME_VALID = "1" AND SELENIUM_SERVICE_PASSWORD_VALID = "1"]]></Publish>
       <Publish Dialog="PortDlg" Control="Back" Event="NewDialog" Value="PasswordDlg">1</Publish>
       <Publish Dialog="PortDlg" Control="Next" Event="NewDialog" Value="SetupTypeDlg">1</Publish>
 
     </UI>
     <UIRef Id="WixUI_ErrorProgressText" />
+
+    <Binary Id="PhakaCustomActions.CA.dll" src="$(var.CustomActions.TargetDir)\PhakaCustomActions.CA.dll" />
+
+    <CustomAction Id="ValidateUsername"
+                  Return="check"
+                  Execute="immediate"
+                  BinaryKey="PhakaCustomActions.CA.dll"
+                  DllEntry="ValidateUsername" />
+
+    <CustomAction Id="ValidatePassword"
+                  Return="check"
+                  Execute="immediate"
+                  BinaryKey="PhakaCustomActions.CA.dll"
+                  DllEntry="ValidatePassword" />
+
+    <CustomAction Id="ValidatePortNumber"
+                  Return="check"
+                  Execute="immediate"
+                  BinaryKey="PhakaCustomActions.CA.dll"
+                  DllEntry="ValidatePortNumber" />
+
+    <CustomAction Id="ValidateUrl"
+                  Return="check"
+                  Execute="immediate"
+                  BinaryKey="PhakaCustomActions.CA.dll"
+                  DllEntry="ValidateUrl" />
+
+    <CustomAction Id="TestUrl"
+                  Return="check"
+                  Execute="immediate"
+                  BinaryKey="PhakaCustomActions.CA.dll"
+                  DllEntry="TestUrl" />
+
+    <CustomAction Id="GeneratePassword"
+                  Return="check"
+                  Execute="immediate"
+                  BinaryKey="PhakaCustomActions.CA.dll"
+                  DllEntry="GeneratePassword" />
+
+    <InstallExecuteSequence>
+      <Custom Action="GeneratePassword" Before="InstallFinalize">NOT Installed</Custom>
+      <!--<Custom Action="ValidateCredentials" Before="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="ValidatePortNumber" Before="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="TestUrl" Before="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="ValidateUrl" Before="InstallFinalize">NOT Installed</Custom>-->
+    </InstallExecuteSequence>
 
   </Product>
 
@@ -73,6 +119,9 @@
 
               <!-- The  IniFile custom action will not create the file, so we need to do it. Be careful of encodings, since Windows refuses to read a INI file with a UTF-8 encoding with a BOM -->
               <File Id='FL_selenium.cfg' Name='selenium-hub.cfg' DiskId='1' Source='wrapper.ini' />
+              
+              <!-- The selenium.json is the configuration for the hub itself, not the Windows Service-->
+              <File Id='FL_selenium.json' Name='selenium.json' DiskId='1' Source='selenium.json' />
 
               <!-- Just in case the user overwrote the port number, let's make sure it is reflected in the configuration file -->
               <IniFile Id="WriteCommandLine" 
@@ -81,7 +130,7 @@
                        Key="CommandLine" 
                        Name="selenium-hub.cfg"
                        Section="Unit" 
-                       Value='java -jar &quot;[#FL_selenium.jar]&quot; -role hub -port [SELENIUM_PORT]' />
+                       Value='java -Xrs -Xmx2048m -jar &quot;[#FL_selenium.jar]&quot; -role hub -port [SELENIUM_PORT] -hubConfig &quot;[#FL_selenium.json]&quot;' />
 
               <!-- The service accounts needs permissions to this directory -->
               <CreateFolder>

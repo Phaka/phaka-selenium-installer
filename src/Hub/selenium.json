@@ -1,0 +1,14 @@
+﻿{    
+    "newSessionWaitTimeout": -1,
+    "servlets" : [],
+    "withoutServlets": [],
+    "custom": {},
+    "capabilityMatcher": "org.openqa.grid.internal.utils.DefaultCapabilityMatcher",
+    "registryClass": "org.openqa.grid.internal.DefaultGridRegistry",
+    "throwOnCapabilityNotPresent": true,
+    "cleanUpCycle": 1000,
+    "role": "hub",
+    "debug": false,
+    "browserTimeout": 0,
+    "timeout": 1800
+}
