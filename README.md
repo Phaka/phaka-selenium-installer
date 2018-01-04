@@ -2,43 +2,120 @@
 
 This repository contains the source to create Windows Installer packages for a Selenium Grid.  
 
-## Description
+## Getting Started
 
-Setting up a Selenium Grid on Windows can be time consuming, error prone and complex. For a Selenium hub, you'll often need to do something like this:
+This project requires a familiarity with Selenium and a Selenium Grid. This project produces two x86 installers
 
-- Install a supported version of Java
-- Download Selenium 
-- Download a Windows Service Wrapper
-- Configure the Windows Service Wrapper
-- Create a dedicated local user account
-- Give the dedicated local user account permissions to the file system
-- Create the Windows Service   
-- Run some commands to ensure the port used by the Selenium Hub isn't going to be assigned by Windows to something else.
-- Configure the Windows Firewall to allow Selenium nodes and clients to connect to the hub 
-- Start the Windows Service   
+* selenium-hub.msi
+* selenium-node.msi
 
-Then for each Windows host that act as an node, you'll need to do the same thing, except since the nodes typically run different operating systems (Windows 7, Windows 8, Windows 8.1, Windows 10, Windows Server 2012 R2, Windows Server 2016):
+### Prerequisites
 
-- Install the Browsers (Chrome, Opera, Firefox, Internet Explorer 11)
-- Install a supported version of Java
-- Download Selenium 
-- Download a Windows Service Wrapper
-- Configure the Windows Service Wrapper
-- Create a dedicated local user account
-- Give the dedicated local user account permissions to the file system
-- Create the Windows Service   
-- Run some commands to ensure the port used by the Selenium Grid isn't going to be assigned by Windows to something else.
-- Configure the Windows Firewall to allow the Selenium Hub to connect to the Selenium nodes. 
-- Start the Windows Service   
+The Selenium hub and node installers were require the following:
 
-The goal of these installers is to do most of this where licensing permits binaries to be redistrubuted. 
+* Windows
+    * Windows Server 2016
+    * Windows Server 2012 R2
+    * Windows Server 2012
+    * Windows Server 2008 R2
+    * Windows 7
+    * Windows 8
+    * Windows 8.1
+    * Windows 10
+* JRE or JDK
+    * 1.9
+    * 1.8
+* administrative access to the computers
+
+In order for the Selenium Node to function, you'll also need to install one of the following Browsers
+
+* Firefox
+* Google Chrome
+* Opera
+* Internet Explorer
+
+In a typicall configuration, the hub is installed on a variant of Windows Server due to technical limits on concurrent connections, and the hubs are installed on a number of Windows client variants.  For example, this is typical:
+
+* Selenium Hub
+    * Windows Server 2016
+* Selenium Node
+    * Windows 7
+        * Firefox
+        * Chrome
+        * Internet Explorer
+        * Opera
+    * Windows 8.1
+        * Firefox
+        * Chrome
+        * Internet Explorer
+        * Opera
+    * Windows 10
+        * Firefox
+        * Chrome
+        * Internet Explorer
+        * Microsoft Edge (not installed by the installer)
+        * Opera
+
+### Installing
+
+#### Selenium Hub 
+
+* Download the [latest release](https://github.com/Phaka/phaka-selenium-installer/releases) of `selenium-hub.msi`.
+* You may want to unlock the msi.
+* Run the installer
+
+Once installed, you can view that the Selenium hub is up and running by visiting http://localhost:4444/grid/console. The installer also opened the firewalls to allow traffic to port 4444, so you could access it remotely as http://172.16.247.141/grid/console, if 172.16.247.141 was the IP address of the selenium hub.  Refresh this page after installing each node and confirm that the node registered itself with the Selenium Hub.  It may take some time.
+
+The installer has the following properties:
+
+|Name|Default Value|Description|
+|---|---|---|
+|`SELENIUM_SERVICE_USERNAME`|`Phaka Selenium Hub`|The username under which the windows service will run|
+|`SELENIUM_SERVICE_PASSWORD`|`Ph@k@-S3l3nium-Hub`|The password of the user under which the windows service will run|
+|`SELENIUM_PORT`|`4444`|The port that the Selenium hub will listen to|
+
+The installer can be executed from command line as follows. 
+
+```
+msiexec /i selenium-hub.msi
+```
+
+
+#### Selenium Node
+
+For each node, you'll need the following applies:
+
+* Download the [latest release](https://github.com/Phaka/phaka-selenium-installer/releases) of `selenium-node.msi`.
+* You may want to unlock the msi.
+* Run the installer
+
+Once installed, you can view that the Selenium node is up and running by visiting http://localhost:5555/wd/hub/static/resource/hub.html. The installer also opened the firewalls to allow traffic to port 5555, so you could access it remotely as http://172.16.247.142:5555/wd/hub/static/resource/hub.html, if 172.16.247.142 was the IP address of the Selenium node. It takes a few seconds for the Selenium node to register itself with a the hub.
+
+The installer has the following properties:
+
+|Name|Default Value|Description|
+|---|---|---|
+|`SELENIUM_SERVICE_USERNAME`|`Phaka Selenium Node`|The username under which the windows service will run|
+|`SELENIUM_SERVICE_PASSWORD`|`Ph@k@-S3l3nium-Node`|The password of the user under which the windows service will run|
+|`SELENIUM_PORT`|`5555`|The port that the Selenium node will listen to|
+|`SELENIUM_HUB_BASEURL`|`http://localhost:4444/`|The URL of the Selenium Hub. The default value assumes that the hub and node is installed on the same host|
+
+You could also run the installer from the command line:
+
+```
+msiexec /i selenium-node.msi
+```
 
 ## Building
+
+* [Visual Studio 2017](https://www.visualstudio.com/downloads/)
+* [Windows 10](https://www.microsoft.com/en-us/software-download/windows10) 
 
 In order to build the codebase you'll need the following
 
 - nuget
-- Visual Studio Community editio n or higher
+- Visual Studio Community edition or higher
+- WiX Toolset
 
 Before you can build the packages, you'll need to restore packages.  Typically this is only done once, but you may need to do it whenever the packages folder was deleted. 
 
@@ -52,26 +129,23 @@ In order to build the release package, you can use `msbuild`.
 msbuild /t:Build /p:Configuration=Release /p:Platform=x86 SeInstaller.sln
 ```
 
-## Testing
+## Contributing
 
-When making changes to the installers, the following tests needs to pass:
+Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
-### Selenium Hub 
+## Versioning
 
-- [ ] The display name showed in the Control Panel is "Phaka Selenium Hub"
-- [ ] The display name of the Windows Service is "Phaka Selenium Hub"
-- [ ] A user "Phaka Selenium Hub" was created.
-- [ ] The files were deployed to `%ProgramFiles(x86)%\Selenium\Hub`
-- [ ] The configuration file, `%ProgramFiles(x86)%\Selenium\Hub\selenium-hub.cfg` has the correct values.
-- [ ] Uninstalling the package cleanly removes all files
-- [ ] The package is upgradable from previous versions
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/Phaka/phaka-selenium-installer/tags). 
 
-### Selenium Node 
+## Authors
 
-- [ ] The display name showed in the Control Panel is "Phaka Selenium Node"
-- [ ] The display name of the Windows Service is "Phaka Selenium Node"
-- [ ] The files were deployed to `%ProgramFiles(x86)%\Selenium\Node`
-- [ ] The configuration file, `%ProgramFiles(x86)%\Selenium\Node\selenium-node.cfg` has the correct values.
-- [ ] Uninstalling the package cleanly removes all files
-- [ ] The package is upgradable from previous versions
+* [WernerStrydom](https://github.com/WernerStrydom) 
+
+## License
+
+- This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Acknowledgments
+
+* [WinSW](https://github.com/kohsuke/winsw/)
 
