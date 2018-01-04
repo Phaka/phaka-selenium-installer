@@ -14,7 +14,7 @@
     <Package InstallerVersion="200" 
              Compressed="yes" 
              InstallScope="perMachine" />
-    <Condition Message="You need to be an administrator to install this product.">AdminUser</Condition>
+    <Condition Message="You need to be an administrator to install this product.">Privileged</Condition>
     <Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
 
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
