@@ -98,23 +98,23 @@ Additional Tasks:
 
 ### Installing Windows 7 Pro (64 bit)
 
-1. Install the operating system as usuall
-2. If needed, install VMware Tools (if running on VMware), or software needed for the operating system to work
-3. (Optional) Install endpoint protection (e.g. Sophos Endpoint)
-4. (Optional) Enable Remote Desktop to ease remote management
-5. (Optional) Join the computer to a domain, if that is required by your organization.
-6. Activate the operating system
-7. Rename computer to something sensible, for example SEN03SFO01 (Selenium Node 03 at Site 01 close to San Francisco Airport)
-8. Make sure Windows Updates are installed
-9. Install [WMF 5.1](https://go.microsoft.com/fwlink/?linkid=839523) (Windows Management Framework). See [documentation](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure).
+- [ ] Install the operating system as usuall
+- [ ] If needed, install VMware Tools (if running on VMware), or software needed for the operating system to work
+- [ ] (Optional) Install endpoint protection (e.g. Sophos Endpoint)
+- [ ] (Optional) Enable Remote Desktop to ease remote management
+- [ ] (Optional) Join the computer to a domain, if that is required by your organization.
+- [ ] Activate the operating system
+- [ ] Rename computer to something sensible, for example SEN03SFO01 (Selenium Node 03 at Site 01 close to San Francisco Airport)
+- [ ] Make sure Windows Updates are installed
+- [ ] Install [WMF 5.1](https://go.microsoft.com/fwlink/?linkid=839523) (Windows Management Framework). See [documentation](https://docs.microsoft.com/en-us/powershell/wmf/5.1/install-configure).
 
 Additional Tasks:
 
-1. Create a snapshot "baseline" of the virtual machine
-2. Run sysprep 
-3. Create another snapshot
-4. Create a template from the snapshot
-5. Revert to the "baseline" snaphot
+- [ ] Create a snapshot "baseline" of the virtual machine
+- [ ] Run sysprep 
+- [ ] Create another snapshot
+- [ ] Create a template from the snapshot
+- [ ] Revert to the "baseline" snaphot
 
 ### Configure DNS Server
 
