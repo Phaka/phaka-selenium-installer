@@ -9,7 +9,7 @@
            Name="Phaka Selenium Hub" 
            Language="1033" 
            Version="1.0.1.0" 
-           Manufacturer="Phaka"
+           Manufacturer="Werner Strydom"
            UpgradeCode="8925250d-7292-4909-8628-26a74047aa67">
     <Package InstallerVersion="200" 
              Compressed="yes" 

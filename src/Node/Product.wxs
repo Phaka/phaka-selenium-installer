@@ -4,7 +4,7 @@
      xmlns:http="http://schemas.microsoft.com/wix/HttpExtension"
      xmlns:firewall="http://schemas.microsoft.com/wix/FirewallExtension">
 
-	<Product Id="*" Name="Phaka Selenium Node" Language="1033" Version="1.0.1.0" Manufacturer="Phaka" UpgradeCode="776358eb-d547-4b25-b4f6-5e364ff8e109">
+	<Product Id="*" Name="Phaka Selenium Node" Language="1033" Version="1.0.1.0" Manufacturer="Werner Strydom" UpgradeCode="776358eb-d547-4b25-b4f6-5e364ff8e109">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 		<Condition Message="You need to be an administrator to install this product.">Privileged</Condition>
 		<Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
