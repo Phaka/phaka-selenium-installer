@@ -124,6 +124,10 @@ You may want to make sure that you register an easy to remember name, `selenium.
 
 We will not always be reprovisioning machines to deploy the grid. 
 
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Phaka/phaka-selenium-installer/documentation/scripts/hub/install.ps1'))
+
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Phaka/phaka-selenium-installer/documentation/scripts/node/install.ps1'))
+
 ### Selenium Hub
 
 This assumes that you'll be installing  
