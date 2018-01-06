@@ -4,10 +4,8 @@ This repository contains the source to create Windows Installer packages for a S
 
 ## Getting Started
 
-This project requires a familiarity with Selenium and a Selenium Grid. This project produces two x86 installers
+See the [documentation](docs/index.md) for instructions.
 
-* selenium-hub.msi
-* selenium-node.msi
 
 ### Prerequisites
 
@@ -58,53 +56,7 @@ In a typicall configuration, the hub is installed on a variant of Windows Server
 
 ### Installing
 
-#### Selenium Hub 
 
-* Download the [latest release](https://github.com/Phaka/phaka-selenium-installer/releases) of `selenium-hub.msi`.
-* You may want to unlock the msi.
-* Run the installer
-
-Once installed, you can view that the Selenium hub is up and running by visiting http://localhost:4444/grid/console. The installer also opened the firewalls to allow traffic to port 4444, so you could access it remotely as http://172.16.247.141/grid/console, if 172.16.247.141 was the IP address of the selenium hub.  Refresh this page after installing each node and confirm that the node registered itself with the Selenium Hub.  It may take some time.
-
-The installer has the following properties:
-
-|Name|Default Value|Description|
-|---|---|---|
-|`SELENIUM_SERVICE_USERNAME`|`Phaka Selenium Hub`|The username under which the windows service will run|
-|`SELENIUM_SERVICE_PASSWORD`|`Ph@k@-S3l3nium-Hub`|The password of the user under which the windows service will run|
-|`SELENIUM_PORT`|`4444`|The port that the Selenium hub will listen to|
-
-The installer can be executed from command line as follows. 
-
-```
-msiexec /i selenium-hub.msi
-```
-
-
-#### Selenium Node
-
-For each node, you'll need the following applies:
-
-* Download the [latest release](https://github.com/Phaka/phaka-selenium-installer/releases) of `selenium-node.msi`.
-* You may want to unlock the msi.
-* Run the installer
-
-Once installed, you can view that the Selenium node is up and running by visiting http://localhost:5555/wd/hub/static/resource/hub.html. The installer also opened the firewalls to allow traffic to port 5555, so you could access it remotely as http://172.16.247.142:5555/wd/hub/static/resource/hub.html, if 172.16.247.142 was the IP address of the Selenium node. It takes a few seconds for the Selenium node to register itself with a the hub.
-
-The installer has the following properties:
-
-|Name|Default Value|Description|
-|---|---|---|
-|`SELENIUM_SERVICE_USERNAME`|`Phaka Selenium Node`|The username under which the windows service will run|
-|`SELENIUM_SERVICE_PASSWORD`|`Ph@k@-S3l3nium-Node`|The password of the user under which the windows service will run|
-|`SELENIUM_PORT`|`5555`|The port that the Selenium node will listen to|
-|`SELENIUM_HUB_BASEURL`|`http://localhost:4444/`|The URL of the Selenium Hub. The default value assumes that the hub and node is installed on the same host|
-
-You could also run the installer from the command line:
-
-```
-msiexec /i selenium-node.msi
-```
 
 ## Building
 

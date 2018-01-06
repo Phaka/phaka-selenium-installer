@@ -122,12 +122,102 @@ You may want to make sure that you register an easy to remember name, `selenium.
 
 ## Deployment
 
-We will not always be reprovisioning machines to deploy the grid. 
-
-Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Phaka/phaka-selenium-installer/documentation/scripts/hub/install.ps1'))
-
-Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Phaka/phaka-selenium-installer/documentation/scripts/node/install.ps1'))
+We'll need a script to install or update software on the systems every now and then. 
 
 ### Selenium Hub
 
-This assumes that you'll be installing  
+In order to install the Selenium Hub, we need to:
+
+- [ ] Install Chocalatey 
+- [ ] Install a JRE 1.8
+
+Or you could just run the following PowerShell script.
+
+```
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Phaka/phaka-selenium-installer/master/scripts/hub/install.ps1'))
+```
+
+
+- [ ] Download the [latest release](https://github.com/Phaka/phaka-selenium-installer/releases) of `selenium-hub.msi`.
+- [ ] Unlock the msi.
+- [ ] Run the installer
+
+Once installed, you can view that the Selenium hub is up and running by visiting http://localhost:4444/grid/console. The installer also opened the firewalls to allow traffic to port 4444, so you could access it remotely as http://172.16.247.141/grid/console, if 172.16.247.141 was the IP address of the selenium hub.  Refresh this page after installing each node and confirm that the node registered itself with the Selenium Hub.  It may take some time.
+
+The installer has the following properties:
+
+|Name|Default Value|Description|
+|---|---|---|
+|`SELENIUM_SERVICE_USERNAME`|`Phaka Selenium Hub`|The username under which the windows service will run|
+|`SELENIUM_SERVICE_PASSWORD`|`Ph@k@-S3l3nium-Hub`|The password of the user under which the windows service will run|
+|`SELENIUM_PORT`|`4444`|The port that the Selenium hub will listen to|
+
+The installer can be executed from command line as follows. 
+
+```
+msiexec /i selenium-hub.msi
+```
+
+To get more logging, you can run the installer as follows:
+
+```
+msiexec /i selenium-hub.msi /L*v selenium-hub.log
+```
+
+If you'd like to customize the port number to `9999`, you can overwrite the property:
+
+```
+msiexec /i selenium-hub.msi SELENIUM_PORT=9999
+```
+
+
+### Selenium Node
+
+In order to install the Selenium Node, we need to:
+
+- [ ] Install Chocalatey 
+- [ ] Install a JRE 1.8
+- [ ] Google Chrome
+- [ ] Firefox
+- [ ] Opera
+
+Or you could just run the following PowerShell script.
+
+```
+Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://raw.githubusercontent.com/Phaka/phaka-selenium-installer/master/scripts/node/install.ps1'))
+```
+
+You can execute these scripts again in order to _patch_ your servers.
+
+- [ ] Download the [latest release](https://github.com/Phaka/phaka-selenium-installer/releases) of `selenium-node.msi`.
+- [ ] You may want to unlock the msi.
+- [ ] Run the installer
+
+Once installed, you can view that the Selenium node is up and running by visiting http://localhost:5555/wd/hub/static/resource/hub.html. The installer also opened the firewalls to allow traffic to port 5555, so you could access it remotely as http://172.16.247.142:5555/wd/hub/static/resource/hub.html, if 172.16.247.142 was the IP address of the Selenium node. It takes a few seconds for the Selenium node to register itself with a the hub.
+
+The installer has the following properties:
+
+|Name|Default Value|Description|
+|---|---|---|
+|`SELENIUM_SERVICE_USERNAME`|`Phaka Selenium Node`|The username under which the windows service will run|
+|`SELENIUM_SERVICE_PASSWORD`|`Ph@k@-S3l3nium-Node`|The password of the user under which the windows service will run|
+|`SELENIUM_PORT`|`5555`|The port that the Selenium node will listen to|
+|`SELENIUM_HUB_BASEURL`|`http://localhost:4444/`|The URL of the Selenium Hub. The default value assumes that the hub and node is installed on the same host|
+
+You could also run the installer from the command line:
+
+```
+msiexec /i selenium-node.msi
+```
+
+To get more logging, you can run the installer as follows:
+
+```
+msiexec /i selenium-hub.node /L*v selenium-node.log
+```
+
+If you'd like to customize the port number to `9999`, and the hub url you can overwrite the property:
+
+```
+msiexec /i selenium-hub.node SELENIUM_PORT=9999 SELENIUM_HUB_BASEURL=http://172.16.128.23/
+```

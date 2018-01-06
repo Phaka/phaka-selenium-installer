@@ -13,10 +13,13 @@
            UpgradeCode="8925250d-7292-4909-8628-26a74047aa67">
     <Package InstallerVersion="200" 
              Compressed="yes" 
-             InstallScope="perMachine" />
+             InstallScope="perMachine"
+             InstallPrivileges="elevated" />
+
     <Condition Message="You need to be an administrator to install this product.">Privileged</Condition>
     <Condition Message="Windows 7 or Windows Server 2008 R2 or higher is required"><![CDATA[Installed OR VersionNT >= 601]]></Condition>
 
+    <Property Id="MSIUSEREALADMINDETECTION" Value="1" />
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
     <Property Id="SELENIUM_SERVICE_USERNAME" Value="selenium-hub" />
     <Property Id="SELENIUM_SERVICE_USERNAME_VALID" Value="0" />
